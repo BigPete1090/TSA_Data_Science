@@ -1,0 +1,95 @@
+Tourism Data Science Project Summary
+
+Dataset:
+- Name: Hotel Booking Demand Dataset
+- File: data/hotel_bookings.csv
+- Format: CSV
+- Original article: Antonio, N., de Almeida, A., & Nunes, L. (2019). Hotel booking demand datasets. Data in Brief, 22, 41-49. DOI: 10.1016/j.dib.2018.11.126
+- Download mirror used in this workspace: https://raw.githubusercontent.com/salves94/hotel-exploratory-data-analysis/master/hotel_bookings.csv
+
+Research questions:
+1. Which hotel booking factors are most associated with cancellation?
+2. Can machine learning predict booking cancellation accurately from booking-time tourism variables?
+
+Analysis section for presentation:
+- Compared cancellation rates between City Hotels and Resort Hotels.
+- Compared cancellation rates across deposit types to see whether payment commitment affects booking behavior.
+- Compared customer types such as Transient, Contract, Group, and Transient-Party.
+- Compared bookings with short vs long lead times using lead-time quartiles.
+- Compared bookings with different numbers of special requests.
+- Compared numeric tourism and booking variables using a correlation matrix.
+- Compared three machine learning models: Logistic Regression, Decision Tree, and Random Forest.
+
+Interesting descriptive results:
+- Overall cancellation rate was 37.04%, so cancellations are common enough to be an important tourism business problem.
+- City Hotels had a much higher cancellation rate than Resort Hotels: 41.73% vs 27.76%.
+- Non-Refund bookings had the highest cancellation rate at 99.36%, while No Deposit bookings were much lower at 28.38%.
+- Transient customers had the highest cancellation rate at 40.75%, while Group customers were much lower at 10.23%.
+- Longer lead times were strongly linked with more cancellations:
+  0 to 18 days: 14.64%
+  19 to 69 days: 35.86%
+  70 to 160 days: 42.58%
+  161 to 737 days: 55.44%
+- Bookings with no special requests canceled much more often than bookings with several requests:
+  0 requests: 47.72%
+  1 request: 22.02%
+  2 requests: 22.10%
+  3 requests: 17.86%
+  4 requests: 10.59%
+  5 requests: 5.00%
+
+Interesting correlation results:
+- The strongest positive non-target correlation with cancellation was lead_time at 0.2931.
+- Previous cancellations were also positively related to cancellation at 0.1101.
+- The strongest negative relationships were total_of_special_requests at -0.2347 and required_car_parking_spaces at -0.1955.
+- This means bookings that look more committed or customized were less likely to be canceled.
+
+Interesting machine learning results:
+- Random Forest was the best model.
+- Random Forest performance:
+  Accuracy: 0.8713
+  Precision: 0.8224
+  Recall: 0.8324
+  F1: 0.8274
+  ROC AUC: 0.9451
+- Logistic Regression was still strong, but weaker than Random Forest.
+- Decision Tree had the highest recall among the weaker models, which means it caught many cancellations but made more false positives.
+- The top Random Forest features included deposit type, lead time, number of special requests, parking spaces, ADR, previous cancellations, and customer type.
+
+What these results mean:
+- Cancellation in tourism bookings is not random.
+- Customer commitment signals matter a lot.
+- Earlier bookings are more likely to be canceled.
+- More customized or committed bookings, such as those with special requests or parking needs, are less likely to be canceled.
+- This makes the project more meaningful than a simple rating-prediction project because it connects directly to hotel operations, tourism planning, and revenue management.
+
+Overall cancellation rate: 37.04%
+Best model: Random Forest
+Best model accuracy: 0.8713
+Best model F1: 0.8274
+Best model ROC AUC: 0.9451
+
+Top numeric correlations with cancellation:
+- is_canceled: 1.0000
+- lead_time: 0.2931
+- previous_cancellations: 0.1101
+- adults: 0.0600
+- days_in_waiting_list: 0.0542
+- adr: 0.0476
+- family_size: 0.0465
+- stays_in_week_nights: 0.0248
+
+Leakage prevention:
+- reservation_status and reservation_status_date were excluded from machine learning because they directly reflect the booking outcome.
+
+Main output files:
+- figures/cancellation_distribution.png
+- figures/cancellation_rate_by_hotel.png
+- figures/cancellation_rate_by_market_segment.png
+- figures/correlation_matrix.png
+- figures/confusion_matrix_best_model.png
+- figures/random_forest_feature_importance.png
+- results/model_metrics.csv
+- results/top_correlations_with_cancellation.csv
+- results/random_forest_feature_importance.csv
+- results/confusion_matrix.csv
