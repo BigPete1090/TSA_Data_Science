@@ -1,0 +1,81 @@
+Project topic:
+Predicting whether a cultural tourism experience receives high satisfaction using an open-source tourism dataset.
+
+Dataset used:
+- Name: Cultural Tourism Dataset
+- File format: CSV
+- Local file used here: data/raw/tourism_dataset_5000.csv
+- Public source referenced by you: Kaggle dataset by ziya07
+- Additional open mirror used to download the file in this workspace: Zenodo zip archive
+
+What the data actually contains:
+- 5,000 tourist experience records
+- Variables: age, interests, preferred tour duration, accessibility, site name, sites visited, tour duration, tourist rating, system response time, recommendation accuracy, VR experience quality, and satisfaction
+
+Research questions answered with this data:
+1. What proportion of tourist experiences are rated as high satisfaction?
+2. Which sites have the highest and lowest rates of high satisfaction?
+3. How does high satisfaction change with preferred tour duration and actual tour duration?
+4. Which available features are most useful for predicting high satisfaction?
+5. Does using Tourist Rating create leakage and artificially inflate model accuracy?
+
+Target used for prediction:
+- high_satisfaction = 1 when Satisfaction >= 4
+- high_satisfaction = 0 when Satisfaction = 3
+
+Why this target was chosen:
+- It creates a clean classification problem.
+- It matches the idea of separating stronger experiences from weaker ones.
+- The dataset only contains satisfaction values of 3, 4, and 5.
+
+Important caution:
+- Tourist Rating is highly correlated with Satisfaction and nearly gives away the answer.
+- Any model that includes Tourist Rating will look unrealistically strong.
+- The final project files now exclude Tourist Rating from the actual prediction pipeline.
+- Weather should not be added from this dataset alone because there is no date or seasonal field for each record.
+
+Main descriptive findings from this run:
+- Overall high satisfaction rate: 38.78%
+- Highest site by high satisfaction rate: Eiffel Tower at 40.45%
+- Lowest site by high satisfaction rate: Great Wall of China at 37.12%
+- Longer tours sometimes show higher satisfaction rates, but the pattern is not strong enough to create a reliable predictive model by itself.
+
+Prediction results from this run:
+- Majority baseline: accuracy 0.6120, F1 0.0000
+- Logistic Regression: accuracy 0.5050, balanced accuracy 0.5003, F1 0.4291
+- Decision Tree: accuracy 0.4560, balanced accuracy 0.5207, F1 0.5358
+- Random Forest: accuracy 0.5500, balanced accuracy 0.5022, F1 0.3323
+
+Interpretation of those results:
+- The data supports descriptive analysis very well.
+- The data does not support a high-accuracy honest prediction model with the fields available.
+- The best leakage-free model improves F1 for the positive class, but not overall accuracy.
+- That means the project is better framed as a methodologically careful tourism analysis than as a high-accuracy forecasting system.
+
+Best way to present this later:
+- Main project question:
+  "Which tourism experience features are associated with higher tourist satisfaction in a cultural tourism dataset?"
+- Main predictive question:
+  "How well can high satisfaction be predicted from trip and experience variables when leakage is removed?"
+- Main conclusion:
+  "After removing Tourist Rating to avoid leakage, prediction becomes much weaker, showing that the remaining variables have limited standalone predictive power."
+
+Files to use later:
+- outputs/analysis_summary.md
+- outputs/model_metrics.csv
+- outputs/feature_importance_without_tourist_rating.csv
+- outputs/confusion_matrix_without_tourist_rating.csv
+- outputs/leakage_note.txt
+- outputs/site_summary.csv
+- outputs/preferred_duration_summary.csv
+- outputs/tour_duration_summary.csv
+- outputs/correlations.csv
+- outputs/figures/satisfaction_distribution.png
+- outputs/figures/high_satisfaction_by_site.png
+- outputs/figures/high_satisfaction_by_tour_duration.png
+- outputs/figures/rating_vs_satisfaction_heatmap.png
+
+Poster guidance:
+- This project is still usable, but the strongest honest story is about analysis plus leakage-aware modeling.
+- Do not claim that weather is part of this model unless you later merge a second dataset using defensible date and location keys.
+- If you want a project that truly aims for high predictive accuracy without leakage, you may want to switch to a dataset with richer real-world tourism variables.

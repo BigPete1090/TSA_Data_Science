@@ -1,0 +1,42 @@
+FINAL DELIVERABLES GUIDE
+
+This folder is the easiest place to work from.
+
+Main folders:
+- graphs: all final charts and images
+- results: all final CSV result tables and the leakage note
+- docs: readable summaries and project notes
+
+Most important files:
+- docs/analysis_summary.md
+  This is the short summary of the project, findings, and safe conclusions.
+
+- docs/PROJECT_NOTES.txt
+  This is the plain-language explanation of the research questions, model setup, findings, and how to talk about the project later.
+
+- results/model_metrics.csv
+  Final leakage-free model results.
+
+- results/feature_importance_without_tourist_rating.csv
+  The main predictor importance table for the final model.
+
+- results/confusion_matrix_without_tourist_rating.csv
+  Final confusion matrix for the leakage-free model.
+
+- results/leakage_note.txt
+  Explains why Tourist Rating was removed and why weather should not be added from this dataset alone.
+
+Best graphs for a poster:
+- graphs/satisfaction_distribution.png
+- graphs/high_satisfaction_by_site.png
+- graphs/high_satisfaction_by_tour_duration.png
+
+Use with caution:
+- graphs/rating_vs_satisfaction_heatmap.png
+  This is useful to explain leakage, but do not present Tourist Rating as a valid final predictor.
+
+Suggested workflow:
+1. Read docs/analysis_summary.md
+2. Use graphs for the poster visuals
+3. Pull final numbers from results/model_metrics.csv
+4. Use docs/PROJECT_NOTES.txt to help write methods, results, and conclusion sections

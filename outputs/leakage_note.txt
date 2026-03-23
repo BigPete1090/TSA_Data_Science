@@ -1,0 +1,2 @@
+Tourist Rating was excluded from the final model because it is extremely close to Satisfaction and leaks the target.
+Do not use weather as a predictor with this dataset unless you first add a reliable per-record date and location field from another source.
