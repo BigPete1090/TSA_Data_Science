@@ -4,8 +4,7 @@
 *.xls
 
 # Generated charts
-*.png
-*.jpg
+
 
 # Python
 __pycache__/
