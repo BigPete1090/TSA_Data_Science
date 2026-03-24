@@ -1,5 +1,6 @@
 
 import sys
+from scipy import stats
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -563,3 +564,49 @@ print("  SmartTourRoutePlanner: Tourism Route Dataset. Kaggle, uploaded by ziya0
 print("  URL: https://www.kaggle.com/datasets/ziya07/smarttourrouteplanner-tourism-route-dataset")
 print("  File format: CSV")
 print("="*60 + "\n")
+
+print("── Additional Tests ───────────────────────────────────")
+
+def anova_groups(frame, group_col, value_col):
+    groups = []
+    for group_name in frame[group_col].dropna().unique():
+        values = frame.loc[frame[group_col] == group_name, value_col].dropna()
+        if len(values) >= 2:
+            groups.append(values)
+    return groups
+
+if "total_cost" in df.columns:
+    df["cost_tier"] = pd.qcut(
+        df["total_cost"].rank(method="first"),
+        q=3,
+        labels=["Low", "Medium", "High"]
+    )
+    cost_groups = anova_groups(df, "cost_tier", satisfaction_col)
+    if len(cost_groups) >= 2:
+        cost_f, cost_p = stats.f_oneway(*cost_groups)
+        print(f"  Cost tier ANOVA: F={cost_f:.3f}, p={cost_p:.4f}")
+    else:
+        print("  Cost tier ANOVA: insufficient data")
+else:
+    print("  Cost tier ANOVA: total cost not available")
+
+if season_col:
+    season_groups = anova_groups(df, season_col, satisfaction_col)
+    if len(season_groups) >= 2:
+        season_f, season_p = stats.f_oneway(*season_groups)
+        print(f"  Season ANOVA: F={season_f:.3f}, p={season_p:.4f}")
+    else:
+        print("  Season ANOVA: insufficient data")
+else:
+    print("  Season ANOVA: season column not available")
+
+if budget_col and "total_cost" in df.columns:
+    within_budget = df.loc[df["total_cost"] <= df[budget_col], satisfaction_col].dropna()
+    over_budget = df.loc[df["total_cost"] > df[budget_col], satisfaction_col].dropna()
+    if len(within_budget) >= 2 and len(over_budget) >= 2:
+        budget_t, budget_p = stats.ttest_ind(within_budget, over_budget, equal_var=False)
+        print(f"  Budget t-test: t={budget_t:.3f}, p={budget_p:.4f}")
+    else:
+        print("  Budget t-test: insufficient data")
+else:
+    print("  Budget t-test: budget comparison not available")
