@@ -1,36 +1,53 @@
-# TSA Tourism Data Science Project
+# TSA Data Science 2026
 
-This project is now set up so you can use it without presenting from the notebook.
+This repository contains a tourism route analysis project that studies how personalization relates to tourist satisfaction and exploration diversity.
 
-## What To Use
+## Project Overview
 
-- `presentation.html`: the presentation-ready page you can open in a browser.
-- `run_analysis.py`: reruns the full analysis and recreates the figures, CSVs, and saved model.
-- `build_presentation.py`: rebuilds `presentation.html` from the latest project outputs.
-- `artifacts/best_model.joblib`: saved best model pipeline.
+The analysis is built around two questions:
 
-## Presentation-Day Commands
+1. Does higher personalization increase satisfaction?
+2. Does higher personalization reduce exploration diversity?
 
-Run these from the project folder:
+`tsa_analysis.py` loads the dataset, detects relevant columns, engineers personalization and diversity features, tests the hypotheses, trains random forest models, and exports chart images for reporting.
+
+## Files
+
+- `tsa_analysis.py`: main analysis script
+- `tourism_route_dataset.csv`: source dataset
+- `requirements.txt`: required Python packages
+- `artifacts/`: saved project artifacts
+- `chart*.png`: generated output figures
+
+## Installation
+
+Install dependencies from the project root:
 
 ```bash
-.venv/bin/python run_analysis.py
-.venv/bin/python build_presentation.py
+pip install -r requirements.txt
 ```
 
-Then open `presentation.html` in your browser.
+## Usage
 
-If you want a local server instead of opening the file directly:
+Run the analysis with:
 
 ```bash
-.venv/bin/python -m http.server 8000
+python tsa_analysis.py
 ```
 
-Then visit `http://localhost:8000/presentation.html`
+The script expects `tourism_route_dataset.csv` to be in the repository root and saves generated charts to the same directory.
 
-## Main Talking Points
+## Outputs
 
-- The project predicts hotel booking cancellations using tourism booking data.
-- The strongest useful features are `lead_time`, `deposit_type`, `total_of_special_requests`, `required_car_parking_spaces`, `previous_cancellations`, `market_segment`, and `customer_type`.
-- Random Forest is the best model in this project.
-- Leakage variables were excluded so the model stays honest.
+Running the script produces:
+
+- hypothesis test results for satisfaction and diversity
+- personalization tier summaries
+- predictive model metrics for satisfaction and diversity
+- chart exports showing distributions, correlations, and feature importance
+
+## Data Source
+
+SmartTourRoutePlanner: Tourism Route Dataset  
+Kaggle uploader: `ziya07`  
+<https://www.kaggle.com/datasets/ziya07/smarttourrouteplanner-tourism-route-dataset>

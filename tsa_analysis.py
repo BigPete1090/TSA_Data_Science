@@ -1,19 +1,3 @@
-"""
-TSA Data Science 2026 — SmartTourRoutePlanner Analysis
-Dataset: https://www.kaggle.com/datasets/ziya07/smarttourrouteplanner-tourism-route-dataset
-Research Question: Does personalization improve tourist satisfaction while
-                   narrowing exploration diversity?
-
-Hypotheses:
-  H1: Higher personalization_score → higher satisfaction_rating
-  H2: Higher personalization_score → lower exploration diversity
-
-HOW TO RUN:
-  1. Place SmartTourRoutePlanner.csv in the same folder as this file.
-  2. Update CSV_FILE below if your filename differs.
-  3. Run:  python3 tsa_analysis.py
-  4. All charts save automatically as PNG files in this folder.
-"""
 
 import sys
 import warnings
@@ -38,15 +22,11 @@ import seaborn as sns
 from scipy import stats
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing   import LabelEncoder, StandardScaler
-from sklearn.linear_model    import LinearRegression, LogisticRegression
-from sklearn.ensemble        import RandomForestRegressor, RandomForestClassifier
-from sklearn.metrics         import r2_score, mean_squared_error, classification_report
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import r2_score, mean_squared_error
 
-# ═══════════════════════════════════════════════════════════════════════════
-# CONFIG
-# ═══════════════════════════════════════════════════════════════════════════
-CSV_FILE     = "tourism_route_dataset.csv"   # ← update if needed
+CSV_FILE     = "tourism_route_dataset.csv"
 RANDOM_STATE = 42
 CHART_DPI    = 150
 
@@ -54,9 +34,6 @@ plt.style.use("seaborn-v0_8-whitegrid")
 PALETTE = ["#2D6A9F", "#E05C3A", "#2EAA6E", "#F5A623", "#8E44AD", "#16A085"]
 sns.set_palette(PALETTE)
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 1. LOAD
-# ═══════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("  TSA Data Science 2026 — Personalization vs Satisfaction")
 print("="*60)
@@ -71,9 +48,6 @@ except FileNotFoundError:
 print(f"\n✅  Loaded {len(df):,} rows × {len(df.columns)} columns")
 print(f"    Columns: {list(df.columns)}\n")
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 2. AUTO-DETECT COLUMNS
-# ═══════════════════════════════════════════════════════════════════════════
 cols_lower = {c.lower(): c for c in df.columns}
 
 def find_col(*keywords):
@@ -126,9 +100,6 @@ if satisfaction_col is None:
     print("❌  Cannot find satisfaction/rating column. Check your CSV.")
     sys.exit(1)
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 3. CLEAN
-# ═══════════════════════════════════════════════════════════════════════════
 df = df.copy()
 
 numeric_to_clean = [c for c in [
@@ -142,69 +113,52 @@ for c in numeric_to_clean:
 df.dropna(subset=[satisfaction_col], inplace=True)
 print(f"✅  After cleaning: {len(df):,} rows\n")
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 4. BUILD KEY VARIABLES
-# ═══════════════════════════════════════════════════════════════════════════
 print("── Building key variables ──────────────────────────────")
 
-# ── 4a. PERSONALIZATION SCORE (0–1, four components of 0.25 each) ────────
-personalization_components = []
 
-# Component 1: transport preference match
 if transport_col and pref_transport_col:
     df["match_transport"] = (
         df[transport_col].astype(str).str.strip().str.lower() ==
         df[pref_transport_col].astype(str).str.strip().str.lower()
     ).astype(float)
-    personalization_components.append("match_transport")
     print(f"  Transport match rate : {df['match_transport'].mean():.1%}")
 else:
-    df["match_transport"] = 0.5   # neutral if column not found
+    df["match_transport"] = 0.5
     print("  Transport match      : columns not found, defaulting to 0.5")
 
-# Component 2: within budget
 if budget_col and entry_col and accom_col and food_col:
     df["total_cost"] = df[[entry_col, accom_col, food_col]].sum(axis=1)
     df["within_budget"] = (df["total_cost"] <= df[budget_col]).astype(float)
-    personalization_components.append("within_budget")
     print(f"  Within budget rate   : {df['within_budget'].mean():.1%}")
 elif budget_col and entry_col:
     df["total_cost"] = df[entry_col]
     df["within_budget"] = (df["total_cost"] <= df[budget_col]).astype(float)
-    personalization_components.append("within_budget")
 else:
     df["within_budget"] = 0.5
     print("  Within budget        : columns not found, defaulting to 0.5")
 
-# Component 3: within time constraint
 if time_constraint_col and travel_time_col:
     df["within_time"] = (df[travel_time_col] <= df[time_constraint_col]).astype(float)
-    personalization_components.append("within_time")
     print(f"  Within time rate     : {df['within_time'].mean():.1%}")
 else:
     df["within_time"] = 0.5
     print("  Within time          : columns not found, defaulting to 0.5")
 
-# Component 4: destination preference match
 if dest_col and pref_dest_col:
     df["match_destination"] = (
         df[dest_col].astype(str).str.strip().str.lower() ==
         df[pref_dest_col].astype(str).str.strip().str.lower()
     ).astype(float)
-    personalization_components.append("match_destination")
     print(f"  Destination match    : {df['match_destination'].mean():.1%}")
 else:
     df["match_destination"] = 0.5
     print("  Destination match    : columns not found, defaulting to 0.5")
 
-# Combine into a single 0–1 personalization score
 component_cols = ["match_transport", "within_budget", "within_time", "match_destination"]
 df["personalization_score"] = df[component_cols].mean(axis=1)
 print(f"\n  Personalization score: mean={df['personalization_score'].mean():.3f} "
       f"std={df['personalization_score'].std():.3f}")
 
-# ── 4b. EXPLORATION DIVERSITY ────────────────────────────────────────────
-# Look for POI/category columns (binary or categorical type columns)
 poi_candidates = [c for c in df.columns if any(kw in c.lower() for kw in [
     "beach", "temple", "museum", "hill", "wildlife", "park", "heritage",
     "adventure", "city", "nature", "culture", "historical", "poi",
@@ -213,9 +167,7 @@ poi_candidates = [c for c in df.columns if any(kw in c.lower() for kw in [
 
 if poi_candidates:
     print(f"\n  POI columns found    : {poi_candidates}")
-    # Count how many unique POI types each route visits
     poi_df = df[poi_candidates].copy()
-    # If they're binary (0/1), sum them; if categorical, count unique values
     if poi_df.select_dtypes(include="number").shape[1] == len(poi_candidates):
         df["unique_types_count"] = poi_df.sum(axis=1)
     else:
@@ -224,16 +176,11 @@ if poi_candidates:
     df["diversity_index"] = df["unique_types_count"] / max(df["unique_types_count"].max(), 1)
     print(f"  Diversity (unique types): mean={df['unique_types_count'].mean():.2f}")
 else:
-    # No explicit POI columns — use destination_type as a proxy for diversity
-    # by computing how far the actual destination is from the preferred one
     print("\n  No POI columns found — using destination variety as diversity proxy")
     if dest_col:
-        # Encode destination types and use mismatch as a diversity signal
-        all_dests = df[dest_col].astype(str).unique()
         df["unique_types_count"] = df[dest_col].apply(
             lambda x: len(str(x).split(",")) if pd.notna(x) else 1
         )
-        # Use traffic density as a secondary diversity signal if available
         if traffic_col:
             df["diversity_index"] = (
                 (df["unique_types_count"] / df["unique_types_count"].max()) * 0.6 +
@@ -247,14 +194,12 @@ else:
 
 print(f"  Diversity index      : mean={df['diversity_index'].mean():.3f}\n")
 
-# ── 4c. PERSONALIZATION TIERS ────────────────────────────────────────────
 df["personalization_tier"] = pd.cut(
     df["personalization_score"],
     bins=[-0.001, 0.33, 0.67, 1.001],
     labels=["Low", "Medium", "High"]
 )
 
-# ── 4d. HIGH SATISFACTION FLAG ───────────────────────────────────────────
 sat_max = df[satisfaction_col].max()
 sat_threshold = 4.0 if sat_max <= 5 else sat_max * 0.75
 df["high_satisfaction"] = (df[satisfaction_col] >= sat_threshold).astype(int)
@@ -266,9 +211,6 @@ tier_counts = df["personalization_tier"].value_counts().sort_index()
 print(f"  Personalization tiers: {dict(tier_counts)}")
 print()
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 5. CORRELATIONS
-# ═══════════════════════════════════════════════════════════════════════════
 print("── Correlations ────────────────────────────────────────")
 
 r_h1, p_h1 = stats.pearsonr(
@@ -285,9 +227,6 @@ print(f"  H2 — Personalization vs Diversity    : r={r_h2:.3f}, p={p_h2:.4f} "
       f"{'✅ significant' if p_h2 < 0.05 else '❌ not significant'}")
 print()
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 6. CHARTS
-# ═══════════════════════════════════════════════════════════════════════════
 def save(name):
     plt.tight_layout()
     plt.savefig(f"{name}.png", dpi=CHART_DPI, bbox_inches="tight")
@@ -296,7 +235,6 @@ def save(name):
 
 print("── Generating charts ───────────────────────────────────")
 
-# ── Chart 1: Personalization score distribution ──────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 fig.suptitle("Personalization Score Overview", fontsize=14, fontweight="bold")
 
@@ -322,7 +260,6 @@ for i, v in enumerate(tier_counts_plot.values):
     axes[1].text(i, v + 2, str(v), ha="center", fontweight="bold")
 save("chart1_personalization_distribution")
 
-# ── Chart 2: H1 — Personalization vs Satisfaction (scatter) ─────────────
 fig, ax = plt.subplots(figsize=(9, 6))
 ax.scatter(df["personalization_score"], df[satisfaction_col],
            alpha=0.25, s=12, color=PALETTE[0], label="Routes")
@@ -338,7 +275,6 @@ ax.set_title("H1: Personalization → Satisfaction\n"
 ax.legend()
 save("chart2_H1_personalization_vs_satisfaction")
 
-# ── Chart 3: H2 — Personalization vs Diversity (scatter) ────────────────
 fig, ax = plt.subplots(figsize=(9, 6))
 ax.scatter(df["personalization_score"], df["diversity_index"],
            alpha=0.25, s=12, color=PALETTE[4], label="Routes")
@@ -353,7 +289,6 @@ ax.set_title("H2: Personalization → Diversity\n"
 ax.legend()
 save("chart3_H2_personalization_vs_diversity")
 
-# ── Chart 4: THE KEY CHART — double bar by tier ──────────────────────────
 tier_summary = df.groupby("personalization_tier", observed=True).agg(
     avg_satisfaction=(satisfaction_col, "mean"),
     avg_diversity=("diversity_index", "mean"),
@@ -393,7 +328,6 @@ lines2, labels2 = ax2.get_legend_handles_labels()
 ax1.legend(lines1 + lines2, labels1 + labels2, loc="upper left", fontsize=9)
 save("chart4_tradeoff_bar_chart")
 
-# ── Chart 5: Component breakdown ─────────────────────────────────────────
 fig, axes = plt.subplots(2, 2, figsize=(12, 10))
 fig.suptitle("Personalization Components — Individual Analysis",
              fontsize=14, fontweight="bold")
@@ -419,7 +353,6 @@ for i, (col, title, color) in enumerate(comp_info):
                 f"{v:.2f}", ha="center", fontsize=11, fontweight="bold")
 save("chart5_component_breakdown")
 
-# ── Chart 6: Satisfaction distribution by tier ───────────────────────────
 fig, ax = plt.subplots(figsize=(10, 6))
 colors_tier = {"Low": PALETTE[1], "Medium": PALETTE[3], "High": PALETTE[2]}
 for tier in ["Low", "Medium", "High"]:
@@ -433,7 +366,6 @@ ax.set_title("Satisfaction Distribution by Personalization Tier",
 ax.legend()
 save("chart6_satisfaction_by_tier")
 
-# ── Chart 7: Diversity by tier (boxplot) ─────────────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 fig.suptitle("Exploration Diversity by Personalization Tier",
              fontsize=14, fontweight="bold")
@@ -450,7 +382,6 @@ axes[1].set_title("Satisfaction by Tier")
 axes[1].set_xlabel("Personalization Tier"); axes[1].set_ylabel("Satisfaction Rating")
 save("chart7_diversity_and_satisfaction_boxplots")
 
-# ── Chart 8: Correlation matrix ───────────────────────────────────────────
 key_cols = ["personalization_score", satisfaction_col, "diversity_index",
             "match_transport", "within_budget", "within_time", "match_destination"]
 key_cols = [c for c in key_cols if c in df.columns]
@@ -463,7 +394,6 @@ if len(key_cols) >= 3:
     ax.set_title("Correlation Matrix — Key Variables", fontsize=14, fontweight="bold")
     save("chart8_correlation_heatmap")
 
-# ── Chart 9: Season/context breakdown ────────────────────────────────────
 if season_col:
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
     fig.suptitle("Context Factors", fontsize=14, fontweight="bold")
@@ -477,9 +407,6 @@ if season_col:
     axes[1].set_ylabel("Diversity Index"); axes[1].set_xlabel("Season")
     save("chart9_season_context")
 
-# ─══════════════════════════════════════════════════════════════════════════
-# 7. MODELS
-# ═══════════════════════════════════════════════════════════════════════════
 print("\n── Models ──────────────────────────────────────────────")
 
 feature_cols_base = ["personalization_score", "match_transport", "within_budget",
@@ -511,10 +438,7 @@ model_df.dropna(inplace=True)
 print(f"  Modelling on {len(model_df):,} rows, {len(feature_cols)} features")
 
 X = model_df[feature_cols]
-scaler = StandardScaler()
-X_s = scaler.fit_transform(X)
 
-# Model A: Predict satisfaction (regression)
 y_sat = model_df[satisfaction_col]
 Xtr, Xte, ytr, yte = train_test_split(X, y_sat, test_size=0.2, random_state=RANDOM_STATE)
 rf_sat = RandomForestRegressor(n_estimators=200, random_state=RANDOM_STATE)
@@ -525,7 +449,6 @@ rmse_sat = np.sqrt(mean_squared_error(yte, y_pred_sat))
 print(f"\n  Satisfaction model (Random Forest Regressor):")
 print(f"    R² = {r2_sat:.3f}   RMSE = {rmse_sat:.4f}")
 
-# Model B: Predict diversity (regression)
 y_div = model_df["diversity_index"]
 Xtr2, Xte2, ytr2, yte2 = train_test_split(X, y_div, test_size=0.2, random_state=RANDOM_STATE)
 rf_div = RandomForestRegressor(n_estimators=200, random_state=RANDOM_STATE)
@@ -536,7 +459,6 @@ rmse_div = np.sqrt(mean_squared_error(yte2, y_pred_div))
 print(f"\n  Diversity model (Random Forest Regressor):")
 print(f"    R² = {r2_div:.3f}   RMSE = {rmse_div:.4f}")
 
-# ── Chart 10: Feature importance — satisfaction model ────────────────────
 fi_sat = pd.DataFrame({"feature": feature_cols,
                         "importance": rf_sat.feature_importances_})
 fi_sat.sort_values("importance", ascending=True, inplace=True)
@@ -567,7 +489,6 @@ for bar, v in zip(bars2, fi_div["importance"]):
                  f"{v:.3f}", va="center", fontsize=8)
 save("chart10_feature_importance")
 
-# ── Chart 11: Predicted vs actual for both models ────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 fig.suptitle("Model Performance — Predicted vs Actual",
              fontsize=14, fontweight="bold")
@@ -585,9 +506,6 @@ axes[1].set_xlabel("Actual Diversity"); axes[1].set_ylabel("Predicted Diversity"
 axes[1].set_title(f"Diversity  R²={r2_div:.3f}")
 save("chart11_predicted_vs_actual")
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 8. SUMMARY FINDINGS
-# ═══════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("  KEY FINDINGS — use these on your poster")
 print("="*60)
