@@ -1,0 +1,44 @@
+Tourism Data Science Project Summary
+
+Dataset:
+- Name: Hotel Booking Demand Dataset
+- File: data/hotel_bookings.csv
+- Format: CSV
+- Original article: Antonio, N., de Almeida, A., & Nunes, L. (2019). Hotel booking demand datasets. Data in Brief, 22, 41-49. DOI: 10.1016/j.dib.2018.11.126
+- Download mirror used in this workspace: https://raw.githubusercontent.com/salves94/hotel-exploratory-data-analysis/master/hotel_bookings.csv
+
+Research questions:
+1. Which hotel booking factors are most associated with cancellation?
+2. Can machine learning predict booking cancellation accurately from booking-time tourism variables?
+
+Overall cancellation rate: 37.04%
+Best model: Random Forest
+Best model accuracy: 0.8713
+Best model F1: 0.8274
+Best model ROC AUC: 0.9451
+
+Top numeric correlations with cancellation:
+- is_canceled: 1.0000
+- lead_time: 0.2931
+- previous_cancellations: 0.1101
+- adults: 0.0600
+- days_in_waiting_list: 0.0542
+- adr: 0.0476
+- family_size: 0.0465
+- stays_in_week_nights: 0.0248
+
+Leakage prevention:
+- reservation_status and reservation_status_date were excluded from machine learning because they directly reflect the booking outcome.
+
+Main output files:
+- figures/cancellation_distribution.png
+- figures/cancellation_rate_by_hotel.png
+- figures/cancellation_rate_by_market_segment.png
+- figures/correlation_matrix.png
+- figures/confusion_matrix_best_model.png
+- figures/random_forest_feature_importance.png
+- results/model_metrics.csv
+- results/top_correlations_with_cancellation.csv
+- results/random_forest_feature_importance.csv
+- results/confusion_matrix.csv
+- artifacts/best_model.joblib
