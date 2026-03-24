@@ -408,6 +408,21 @@ if season_col:
     axes[1].set_ylabel("Diversity Index"); axes[1].set_xlabel("Season")
     save("chart9_season_context")
 
+if "total_cost" in df.columns:
+    fig, ax = plt.subplots(figsize=(10, 6))
+    cost_df = df[["total_cost", satisfaction_col]].dropna().sort_values("total_cost")
+    ax.scatter(cost_df["total_cost"], cost_df[satisfaction_col],
+               alpha=0.3, s=16, color=PALETTE[1], label="Routes")
+    if len(cost_df) >= 2:
+        slope, intercept = np.polyfit(cost_df["total_cost"], cost_df[satisfaction_col], 1)
+        x_vals = np.linspace(cost_df["total_cost"].min(), cost_df["total_cost"].max(), 100)
+        ax.plot(x_vals, slope * x_vals + intercept, color=PALETTE[0], linewidth=2, label="Trend line")
+    ax.set_title("Total Cost vs Satisfaction", fontsize=14, fontweight="bold")
+    ax.set_xlabel("Total Cost")
+    ax.set_ylabel("Satisfaction Rating")
+    ax.legend()
+    save("chart12_cost_vs_satisfaction")
+
 print("\n── Models ──────────────────────────────────────────────")
 
 feature_cols_base = ["personalization_score", "match_transport", "within_budget",
@@ -556,6 +571,7 @@ for i, name in enumerate([
     "chart9_season_context",
     "chart10_feature_importance",
     "chart11_predicted_vs_actual",
+    "chart12_cost_vs_satisfaction",
 ], 1):
     print(f"    {i:02d}. {name}.png")
 print()
